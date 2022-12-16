@@ -15,7 +15,17 @@ struct ContentView: View {
     @StateObject private var locationManager = LocationManager()
     let weatherSerice = WeatherService.shared
     @State private var weather: Weather?
-
+    @State private var precip: Precipitation?
+    
+//    var minuteWeather: [MinuteWeather] {
+//        if let weather {
+//            Array(weather.minuteForecast.filter { minuteWeather in
+//                return minuteWeather.date.timeIntervalSince(Date()) >= 0
+//            }.prefix(60))
+//        } else {
+//            return []
+//        }
+//    }
     
     var hourlyWeatherData: [HourWeather] {
         if let weather {
@@ -27,37 +37,59 @@ struct ContentView: View {
             return []
         }
     }
+    
+    
+    
     var body: some View {
-        ScrollView{
-            VStack {
-                if let weather = weather{
-                    
-                    VStack{
-                        Text("Current Weather at your Location")
-                        Text("\(weather.currentWeather.temperature.formatted())")
+        NavigationView {
+            ScrollView{
+                VStack {
+                    if let weather = weather{
+                        VStack{
+                            //current weather data
+                            HStack {
+                                Text("\(weather.currentWeather.date.formatted())")
+                                if let location = locationManager.currentLocation{
+                                    NavigationLink(destination: locationView(bruh: location)) {
+                                        Image(systemName: "location")
+                                    }
+                                }
+                            }
+                            
+                            //Text("Current / Upcoming Weather at your Location")
+                            Text("Current Temp: \(weather.currentWeather.temperature.formatted())")
+                            Text("Feels Like: \(weather.currentWeather.apparentTemperature.formatted())")
+                            Text("\(weather.currentWeather.condition.description)")
+                            
+                            
+                        }
+                        HourlyForecastView(hourWeatherList: hourlyWeatherData)
+                            .padding()
+                        HourlyChartView(hourlyWeatherData: hourlyWeatherData)
+                            .padding()
+                        //Spacer()
+                        
+                        TenDayForecastView(dayWeatherList: weather.dailyForecast.forecast)
+                            .padding()
+                       // precipHourView(minuteWeatherList: minuteWeather)
+                        
+                        
+                    } else {
+                        ProgressView()
+                        Text("Loading Weather Data ,this may take a while,\n if it never loads, make sure location services are enabled on this app in the settings.")
+                            .multilineTextAlignment(.center)
                     }
-                    HourlyForecastView(hourWeatherList: hourlyWeatherData)
-                    HourlyChartView(hourlyWeatherData: hourlyWeatherData)
-                    //Spacer()
+                }.task(id: locationManager.currentLocation) {
+                    do{
+                        //if let location = locationManager.currentLocation{
+                        let location = CLLocation(latitude: 42.3314, longitude: 83.0458)
+                        self.weather = try await weatherSerice.weather(for: location)
+                        //}
+                    } catch {
+                        print(error)
+                    }
                     
-                    TenDayForecastView(dayWeatherList: weather.dailyForecast.forecast)
-                    
-                    
-                } else {
-                    ProgressView()
-                    Text("Loading Weather Data, if this takes a while, make sure location services are enabled on this app in the settings.")
-                        .multilineTextAlignment(.center)
                 }
-            }.task(id: locationManager.currentLocation) {
-                do{
-                    //if let location = locationManager.currentLocation{
-                    let location = CLLocation(latitude: 42.3314, longitude: 83.0458)
-                    self.weather = try await weatherSerice.weather(for: location)
-                    //}
-                } catch {
-                    print(error)
-                }
-                
             }
         }
     }
