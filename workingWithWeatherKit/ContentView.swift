@@ -12,11 +12,15 @@ import Charts
 
 
 struct ContentView: View {
+    @State private var timeRemaining = 10
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
     @StateObject private var locationManager = LocationManager()
     let weatherSerice = WeatherService.shared
     @State private var weather: Weather?
     @State private var precip: Precipitation?
     @State var refreshView: Bool = false
+    
     
 
     private func getWeatherAsync() async {
@@ -78,6 +82,11 @@ struct ContentView: View {
                         VStack{
                             //current weather data
                             HStack {
+                                if let location = locationManager.currentLocation{
+                                    NavigationLink(destination: locationView(currentLocation: location)) {
+                                        Image(systemName: "location")
+                                    }
+                                }
                                 Text("Weather Data as of: \(weather.currentWeather.date.formatted(date: .abbreviated, time: .shortened))")
                                     .font(.footnote)
                                 Button{
@@ -87,11 +96,6 @@ struct ContentView: View {
                                         .resizable()
                                         .frame(width: 12, height: 12)
                                         
-                                }
-                                if let location = locationManager.currentLocation{
-                                    NavigationLink(destination: locationView(bruh: location)) {
-                                        Image(systemName: "location")
-                                    }
                                 }
                             }
                             
@@ -125,8 +129,17 @@ struct ContentView: View {
                         
                     } else {
                         ProgressView()
-                        Text("Loading Weather Data ,this may take a while,\n if it never loads, make sure location services are enabled on this app in the settings.")
-                            .multilineTextAlignment(.center)
+                            .padding(EdgeInsets(top: 350, leading: 0, bottom: 25, trailing: 0))
+                        
+                        //Text("\(timeRemaining)")
+                        if timeRemaining < 8 {
+                            Text("Loading Weather Data")
+                        }
+                        if timeRemaining == 0{
+                            Text("This is taking a while, make you you have a stable internet connection and have Location Services enabled for this app in the settings")
+                                .multilineTextAlignment(.center)
+                                .padding()
+                        }
                     }
                 }.task(id: locationManager.currentLocation) {
                     do{
@@ -139,6 +152,10 @@ struct ContentView: View {
                     }
                     
                 }
+            }
+        }.onReceive(timer) { time in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
             }
         }
     }

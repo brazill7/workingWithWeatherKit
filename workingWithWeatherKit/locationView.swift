@@ -10,16 +10,18 @@ import MapKit
 import CoreLocation
 
 struct locationView: View {
-    @State var bruh: CLLocation
-    
- 
+    @State var currentLocation: CLLocation
+    //@State private var lat = currentLocation.coordinate.latitude 
     
     var body: some View {
         Text("Your Current Location")
-        Text("Lat: \(self.bruh.coordinate.latitude)")
-        Text("Long: \(self.bruh.coordinate.longitude)")
+        Text("Lat: \(self.currentLocation.coordinate.latitude)")
+        Text("Long: \(self.currentLocation.coordinate.longitude)")
         
+        //Map
+        //MapMarker(coordinate: CLLocationCoordinate2D(latitude: self.currentLocation.coordinate.latitude, longitude: self.currentLocation.coordinate.longitude))
     }
+    
 }
 
 
