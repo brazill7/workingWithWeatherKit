@@ -29,23 +29,30 @@ struct HourlyForecastView: View {
                     
                     HStack{
                         ForEach(hourWeatherList, id: \.date) { hourWeatherItem in
-                            VStack(spacing: 15) {
+                            VStack(spacing: 10) {
                                 Text(hourWeatherItem.date.formatAsAbbTime())
                                     .foregroundColor(.white)
+                                    .fontWeight(.bold)
+                                    .frame(alignment: .top)
                                 Image(systemName: "\(hourWeatherItem.symbolName)")
                                     .foregroundColor(.white)
-                                Text(hourWeatherItem.temperature.formatted())
+                                Text("\(hourWeatherItem.temperature.formatted())")
                                     .fontWeight(.semibold)
                                     .foregroundColor(.white)
                                 Text(hourWeatherItem.apparentTemperature.formatted())
-                                Text(hourWeatherItem.cloudCover.formatted(.percent))
+                                    .foregroundColor(.white)
+                                Text("\(Image(systemName: "cloud")): \(hourWeatherItem.cloudCover.formatted(.percent))")
                                     .foregroundColor(.gray)
-                                Text(hourWeatherItem.precipitationAmount.formatted())
-                                    .foregroundColor(.gray)
-                                Text(hourWeatherItem.visibility.formatted())
+                                Text("\(Image(systemName: "wind"))\(hourWeatherItem.wind.speed.formatted())")
+                                    .foregroundColor(.cyan)
+                                Text("\(Image(systemName: "sun.min"))\(hourWeatherItem.uvIndex.value.formatted())")
+                                    .foregroundColor(.green)
                             
                                 //Text(hourWeatherItem.precipitation.rawValue)
-                            }//.padding()
+                            }.frame(width: 90, height: 200, alignment: .top)
+                            LinearGradient(colors: [.white, .gray], startPoint: .top, endPoint: .bottom)
+                                .frame(width:1, height: 200)
+                                
                         }
                     }
                 } .background(RoundedRectangle(cornerRadius: 10)

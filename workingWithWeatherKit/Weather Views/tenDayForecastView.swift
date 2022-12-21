@@ -18,10 +18,27 @@ struct TenDayForecastView: View{
                 .underline(pattern: .solid)
             ForEach(dayWeatherList, id: \.date) { dailyWeather in
                 HStack{
-                    HStack{
-                        Text(dailyWeather.date.formatAsAbbDay())
-                        Image(systemName: "\(dailyWeather.symbolName)")
-                            .foregroundColor(.purple)
+                    VStack(alignment: .trailing){
+                        HStack{
+                            Text(dailyWeather.date.formatAsAbbDay())
+                                .frame(alignment: .trailing)
+                                .underline()
+                            Spacer()
+                            Image(systemName: "\(dailyWeather.symbolName)")
+                                .foregroundColor(primaryColor())
+                            //Spacer()
+                        }
+                        HStack{
+                            //Text(dailyWeather.precipitation.rawValue)
+                            //Text(dailyWeather.rainfallAmount.formatted())
+                            //Text("proj: \(dailyWeather.snowfallAmount.formatted())")
+                              //  .font(.caption)
+                            Text(dailyWeather.precipitationChance.formatted(.percent))
+                                .font(.caption)
+                                .padding(EdgeInsets(top: 0, leading: -5, bottom: 0, trailing: -3))
+                            
+                        }
+                        
                     } .frame(width: 100)
                     HStack{
                         Text(dailyWeather.lowTemperature.formatted())
@@ -32,24 +49,13 @@ struct TenDayForecastView: View{
                     }
                     .background(LinearGradient(colors: [.mint,.orange], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .padding(EdgeInsets(top: -2, leading: 0, bottom: -2, trailing: 0))
-                    .padding(EdgeInsets(top: 1, leading: 0, bottom: 0, trailing: 10))
+                    .padding(EdgeInsets(top: 1, leading: 10, bottom: 0, trailing: 10))
                         
                 }
             }
         }
     }
 }
-extension Date {
-    func formatAsAbbDay() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE"
-        return formatter.string(from: self)
-    }
-    func formatAsAbbTime() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "ha"
-        return formatter.string(from: self)
-    }
-}
+
 
 

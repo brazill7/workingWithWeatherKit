@@ -8,7 +8,6 @@
 import SwiftUI
 import CoreLocation
 import WeatherKit
-import Charts
 
 
 struct ContentView: View {
@@ -25,10 +24,11 @@ struct ContentView: View {
 
     private func getWeatherAsync() async {
         do{
-            //if let location = locationManager.currentLocation{
-            let location = CLLocation(latitude: 42.3314, longitude: -83.0458)
+            if let location = locationManager.currentLocation{
+                
             self.weather = try await weatherSerice.weather(for: location)
-            //}
+                
+            }
         } catch {
             print(error)
         }
@@ -39,15 +39,6 @@ struct ContentView: View {
             await getWeatherAsync()
         }
     }
-//    var minuteWeather: [MinuteWeather] {
-//        if let weather {
-//            Array(weather.minuteForecast.filter { minuteWeather in
-//                return minuteWeather.date.timeIntervalSince(Date()) >= 0
-//            }.prefix(60))
-//        } else {
-//            return []
-//        }
-//    }
     
     //used in the 24 hour forecast view
     var hourlyWeatherData: [HourWeather] {
@@ -60,6 +51,18 @@ struct ContentView: View {
             return []
         }
     }
+    //used in the 60 minute real time precip graph
+    var minuteWeatherData: [MinuteWeather] {
+        if let weather {
+            return Array(weather.minuteForecast!.filter { hourlyWeather in
+                return hourlyWeather.date.timeIntervalSince(Date()) >= 0
+            }.prefix(60)) as! Array
+            //prefix is hour many hours you want to display
+        } else {
+            return []
+        }
+    }
+    
     //for use of the top part of the weatherview (no rain/snow for THE HOUR)
     var hourWeatherData: [HourWeather] {
         if let weather {
@@ -71,6 +74,10 @@ struct ContentView: View {
             return []
         }
     }
+    
+    
+    
+    
     
    
     var body: some View {
@@ -87,7 +94,7 @@ struct ContentView: View {
                                         Image(systemName: "location")
                                     }
                                 }
-                                Text("Weather Data as of: \(weather.currentWeather.date.formatted(date: .abbreviated, time: .shortened))")
+                                Text("Current Weather Data, as of: \(weather.currentWeather.date.formatted(date: .abbreviated, time: .shortened))")
                                     .font(.footnote)
                                 Button{
                                     getWeatherDataRegular()
@@ -98,11 +105,16 @@ struct ContentView: View {
                                         
                                 }
                             }
-                            
                             //Text("Current / Upcoming Weather at your Location")
-                            Text("Current Temp: \(weather.currentWeather.temperature.formatted())")
-                            Text("Feels Like: \(weather.currentWeather.apparentTemperature.formatted())")
-                            Text("\(weather.currentWeather.condition.description)")
+                            Text("\(weather.currentWeather.temperature.formatted())")
+                                .font(.system(size: 75))
+                                Spacer()
+                            VStack{
+                                Text("Feels Like: \(weather.currentWeather.apparentTemperature.formatted())")
+                                HStack {
+                                    Text("\(weather.currentWeather.condition.description)")
+                                    Text("\(Image(systemName: "wind")): \(weather.currentWeather.wind.speed.formatted())")
+                                }
                             
                             ForEach(hourWeatherData, id: \.date) { hourWeatherItem in
                                 VStack{
@@ -113,9 +125,14 @@ struct ContentView: View {
                                         }
                                     }
                             }
-                            
+                            }.background(RoundedRectangle(cornerRadius: 10)
+                                .foregroundColor(.gray)
+                                .padding(EdgeInsets(top: -10, leading: -10, bottom: -10, trailing: -10)))
+                                
                             
                         }
+                        MinuteWeatherPrecip(minuteForecast: minuteWeatherData, checkForRain: hourWeatherData, dayWeatherList: weather.dailyForecast.forecast)
+                            .padding()
                         HourlyForecastView(hourWeatherList: hourlyWeatherData)
                             .padding()
                         HourlyChartView(hourlyWeatherData: hourlyWeatherData)
@@ -124,7 +141,7 @@ struct ContentView: View {
                         
                         TenDayForecastView(dayWeatherList: weather.dailyForecast.forecast)
                             .padding()
-                       // precipHourView(minuteWeatherList: minuteWeather)
+                       
                         
                         
                     } else {
@@ -144,7 +161,9 @@ struct ContentView: View {
                 }.task(id: locationManager.currentLocation) {
                     do{
                         //if let location = locationManager.currentLocation{
+                        //let location = CLLocation(latitude: 49.2138, longitude: -2.1358)
                         let location = CLLocation(latitude: 42.3314, longitude: -83.0458)
+                        //let location = CLLocation(latitude: 44.9537, longitude: -93.0900)
                         self.weather = try await weatherSerice.weather(for: location)
                         //}
                     } catch {
